@@ -329,18 +329,27 @@ func (fns goSharedFuncs) externalEnums(file pgs.File) []pgs.Enum {
 	return out
 }
 
-func (fns goSharedFuncs) enumName(enum pgs.Enum) string {
-	out := string(enum.Name())
-	parent := enum.Parent()
-	for {
-		message, ok := parent.(pgs.Message)
-		if ok {
-			out = string(message.Name()) + "_" + out
-			parent = message.Parent()
-		} else {
-			return out
+func (fns goSharedFuncs) enumName(enums []pgs.Enum, pkg pgs.Name) string {
+	for _, enum := range enums {
+		pkgName := fns.PackageName(enum)
+		if pkgName != pkg {
+			continue
+		}
+
+		out := string(enum.Name())
+		parent := enum.Parent()
+		for {
+			message, ok := parent.(pgs.Message)
+			if ok {
+				out = string(message.Name()) + "_" + out
+				parent = message.Parent()
+			} else {
+				return out
+			}
 		}
 	}
+
+	return ""
 }
 
 func (fns goSharedFuncs) enumPackages(enums []pgs.Enum) map[pgs.Name]pgs.FilePath {
